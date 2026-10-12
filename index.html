@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>BADA — Art for Everyone</title>
+<style>
+:root{
+  --ink:#171717; --muted:#777; --paper:#fbfaf7; --white:#fff;
+  --line:#e9e5df; --pink:#ff5d78; --blue:#5574ff; --cream:#f4efe7;
+  --green:#a8cbb8; --lav:#dcd7ff; --shadow:0 10px 35px rgba(28,24,20,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#e9e6e1;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+button,input{font:inherit}
+button{border:0;background:none;cursor:pointer;color:inherit}
+#app{width:min(430px,100vw);height:100vh;min-height:700px;margin:auto;background:var(--paper);position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.12)}
+.screen{position:absolute;inset:0;display:none;background:var(--paper);overflow:hidden}
+.screen.active{display:block}
+.scroll{height:calc(100% - 78px);overflow-y:auto;padding:18px 18px 110px}
+::-webkit-scrollbar{width:0;height:0}
+
+/* loading */
+#loading{background:
+ radial-gradient(circle at 15% 10%,#fff 0 2px,transparent 3px),
+ radial-gradient(circle at 80% 24%,#fff 0 1.5px,transparent 2px),
+ linear-gradient(145deg,#dce5ff 0%,#f7d7e4 35%,#e7edc8 62%,#c9dff4 100%);
+}
+#loading:before{content:"";position:absolute;inset:-20%;background:repeating-radial-gradient(ellipse at 50% 55%,transparent 0 60px,rgba(255,255,255,.25) 61px 64px);transform:rotate(-14deg)}
+.loading-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.logo{font-family:Georgia,serif;font-size:78px;letter-spacing:-7px;font-weight:800}
+.logo-sub{font-size:11px;letter-spacing:5px;margin-top:2px}
+.loading-dot{margin-top:45px;width:7px;height:7px;border-radius:50%;background:#111;box-shadow:18px 0 #111,36px 0 #111;animation:pulse 1s infinite alternate}
+@keyframes pulse{to{opacity:.15;transform:translateX(7px)}}
+
+/* common */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 8px}
+.wordmark{font-family:Georgia,serif;font-weight:800;font-size:27px;letter-spacing:-2px}
+.iconbtn{width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 4px 15px rgba(0,0,0,.07)}
+.eyebrow{font-size:11px;letter-spacing:1.8px;color:#8a847d;text-transform:uppercase;font-weight:700}
+h1{font-family:Georgia,serif;font-size:33px;line-height:1.05;letter-spacing:-1.5px;margin:5px 0 16px}
+h2{font-size:18px;margin:0}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:24px 0 11px}
+.section-head span{font-size:12px;color:#888}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 25px rgba(35,30,25,.05)}
+.pillrow{display:flex;gap:8px;overflow-x:auto;padding:2px 0 5px}
+.pill{white-space:nowrap;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:13px}
+.pill.on{background:#181818;color:#fff;border-color:#181818}
+
+/* home */
+.greeting{padding:4px 18px 0}
+.greeting p{margin:0;color:#777;font-size:13px}
+.hero{margin:8px 18px 0;height:205px;border-radius:28px;overflow:hidden;position:relative;background:#dbe2ff}
+.hero img{width:100%;height:100%;object-fit:cover;filter:saturate(.95)}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%)}
+.hero-copy{position:absolute;left:20px;bottom:17px;color:#fff;z-index:1}
+.hero-copy small{font-size:11px;letter-spacing:1.5px}
+.hero-copy strong{display:block;font-family:Georgia,serif;font-size:28px;line-height:1.02;margin-top:5px}
+.product-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px}
+.product{min-width:148px;height:190px;overflow:hidden;position:relative;background:#eee}
+.product img{width:100%;height:100%;object-fit:cover}
+.product .shade{position:absolute;inset:0;background:linear-gradient(transparent 45%,rgba(0,0,0,.62))}
+.product-info{position:absolute;left:12px;right:10px;bottom:11px;color:#fff}
+.product-info b{font-size:14px}.product-info small{display:block;font-size:10px;margin-top:4px;opacity:.9}
+.three-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mini{min-height:175px;padding:13px 11px;position:relative;overflow:hidden}
+.mini:before{content:"";position:absolute;width:80px;height:80px;border-radius:50%;right:-22px;bottom:-20px;background:rgba(255,255,255,.45)}
+.mini.quote{background:#f1e4d7}.mini.community{background:#e7e3ff}.mini.info{background:#dcefe5}
+.mini .mini-title{font-size:11px;font-weight:800;letter-spacing:-.2px}
+.mini p{font-family:Georgia,serif;font-size:17px;line-height:1.2;margin:22px 0 0}
+.mini small{position:absolute;bottom:12px;left:11px;color:#777;font-size:9px}
+
+/* explore */
+.segment{display:flex;background:#eeeae4;border-radius:14px;padding:4px;margin:2px 0 16px}
+.segment button{flex:1;padding:11px;border-radius:11px;font-weight:700;font-size:13px}
+.segment button.on{background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.feature-card{padding:16px;margin-top:12px;display:flex;gap:13px}
+.feature-thumb{width:84px;height:84px;border-radius:17px;overflow:hidden;flex:none}
+.feature-thumb img{width:100%;height:100%;object-fit:cover}
+.feature-card p{font-size:12px;color:#777;line-height:1.5;margin:6px 0 0}
+.badge{display:inline-block;font-size:9px;padding:5px 8px;background:#f1eee9;border-radius:999px;margin-top:8px}
+
+/* community */
+.trade-card{padding:12px;display:flex;gap:12px;align-items:center;margin-bottom:9px}
+.trade-thumb{width:76px;height:76px;border-radius:15px;overflow:hidden;background:#eee;flex:none}
+.trade-thumb img{width:100%;height:100%;object-fit:cover}
+.trade-main{min-width:0;flex:1}.trade-main b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trade-main p{font-size:11px;color:#888;margin:6px 0}
+.price{font-weight:800;font-size:14px}
+.chatbtn{padding:8px 11px;border-radius:10px;background:#181818;color:#fff;font-size:10px}
+.mate-card{padding:16px;margin-bottom:10px;position:relative}
+.mate-title{font-size:15px;font-weight:800;margin:4px 0 12px}
+.meta{display:flex;gap:7px;flex-wrap:wrap}.meta span{font-size:10px;background:#f4f1ec;padding:6px 8px;border-radius:8px;color:#666}
+
+/* map */
+.mapwrap{height:calc(100% - 78px);position:relative;background:#e6eee5;overflow:hidden}
+.mapbg{position:absolute;inset:0;background:
+linear-gradient(20deg,transparent 0 35%,rgba(255,255,255,.8) 35.2% 36%,transparent 36.2%),
+linear-gradient(95deg,transparent 0 58%,rgba(255,255,255,.8) 58.2% 59%,transparent 59.2%),
+linear-gradient(160deg,transparent 0 20%,rgba(255,255,255,.8) 20.2% 21%,transparent 21.2%),
+repeating-linear-gradient(30deg,rgba(255,255,255,.35) 0 2px,transparent 2px 52px)}
+.searchbox{position:absolute;top:12px;left:16px;right:16px;height:50px;background:#fff;border-radius:17px;display:flex;align-items:center;gap:9px;padding:0 15px;box-shadow:0 7px 22px rgba(0,0,0,.1);z-index:4}
+.searchbox input{border:0;outline:0;flex:1;background:transparent;font-size:13px}
+.mapchips{position:absolute;top:72px;left:16px;right:0;z-index:4;display:flex;gap:7px;overflow:auto}
+.mapchip{background:#fff;padding:9px 12px;border-radius:999px;font-size:11px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.mapchip.on{background:#181818;color:#fff}
+.pin{position:absolute;width:42px;height:42px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#181818;display:grid;place-items:center;color:#fff;box-shadow:0 8px 15px rgba(0,0,0,.18)}
+.pin span{transform:rotate(45deg);font-size:17px}
+.p1{left:19%;top:32%}.p2{left:65%;top:42%;background:#ff5d78}.p3{left:43%;top:62%;background:#5574ff}.p4{left:78%;top:70%;background:#a46cff}
+.mapbottom{position:absolute;left:12px;right:12px;bottom:16px;background:#fff;border-radius:23px;padding:15px;box-shadow:0 10px 30px rgba(0,0,0,.13)}
+.mapbottom b{font-size:14px}.mapbottom p{font-size:11px;color:#777;margin:5px 0 0}
+
+/* my */
+.profile{padding:17px;background:#181818;color:#fff;border-radius:25px;margin-bottom:15px;display:flex;align-items:center;gap:13px}
+.avatar{width:53px;height:53px;border-radius:50%;background:linear-gradient(135deg,#f7b3c4,#8ca6ff);display:grid;place-items:center;color:#fff;font-family:Georgia,serif;font-weight:700;font-size:20px}
+.profile small{color:#bbb}
+.profile b{display:block;font-size:16px;margin:3px 0}
+.menu{background:#fff;border:1px solid var(--line);border-radius:21px;overflow:hidden}
+.menu button{width:100%;display:flex;justify-content:space-between;align-items:center;padding:17px;border-bottom:1px solid #eee;font-size:13px}
+.menu button:last-child{border:0}.arrow{color:#aaa}
+.premium{margin-top:13px;padding:17px;background:linear-gradient(135deg,#e9ddff,#f8e3d9);border-radius:21px}
+.premium b{font-family:Georgia,serif;font-size:20px}.premium p{font-size:11px;color:#666;line-height:1.5}
+
+/* bottom nav */
+.nav{position:absolute;left:10px;right:10px;bottom:10px;height:66px;background:rgba(255,255,255,.94);backdrop-filter:blur(15px);border:1px solid #e8e3dc;border-radius:24px;display:flex;align-items:center;justify-content:space-around;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.1)}
+.nav button{width:20%;font-size:9px;color:#999;display:flex;flex-direction:column;align-items:center;gap:5px}
+.nav button span{font-size:20px;line-height:1}.nav button.on{color:#111;font-weight:800}
+
+/* modal/detail/chat */
+.modal{position:absolute;inset:0;background:rgba(20,20,20,.32);z-index:50;display:none;align-items:flex-end}
+.modal.show{display:flex}
+.sheet{width:100%;max-height:87%;background:var(--paper);border-radius:30px 30px 0 0;padding:12px 18px 28px;overflow:auto}
+.handle{width:40px;height:4px;background:#d8d4ce;border-radius:9px;margin:0 auto 15px}
+.detail-img{height:260px;border-radius:22px;overflow:hidden}.detail-img img{width:100%;height:100%;object-fit:cover}
+.detail h2{font-family:Georgia,serif;font-size:28px;margin:17px 0 7px}.detail p{color:#777;font-size:13px;line-height:1.6}
+.actionrow{display:flex;gap:9px;margin-top:16px}.primary{background:#181818;color:#fff;padding:13px 18px;border-radius:14px;flex:1;font-weight:700}.secondary{background:#eeeae4;padding:13px 16px;border-radius:14px}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);background:#181818;color:#fff;padding:11px 16px;border-radius:999px;font-size:11px;opacity:0;pointer-events:none;z-index:70;transition:.25s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:600px){#app{height:900px;margin:20px auto;border-radius:35px}.screen{border-radius:35px}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<section id="loading" class="screen active">
+  <div class="loading-inner">
+    <div class="logo">BADA</div>
+    <div class="logo-sub">BREAKING ARTISTIC DIVIDES FOR ALL</div>
+    <div class="loading-dot"></div>
+  </div>
+</section>
+
+<section id="home" class="screen">
+  <div class="topbar"><div class="wordmark">BADA</div><button class="iconbtn" onclick="toast('알림이 없습니다')">♧</button></div>
+  <div class="scroll">
+    <div class="greeting"><div class="eyebrow">TODAY IN ART</div><h1>예술은 가까이,<br>기회는 모두에게.</h1><p>오늘 발견할 새로운 문화예술을 골라보세요.</p></div>
+    <div class="hero" onclick="openDetail('오늘의 아트 픽')"><img src="assets/image1.webp"><div class="hero-copy"><small>BADA CURATED</small><strong>취향의 경계를<br>넘어보세요.</strong></div></div>
+
+    <div class="section-head"><h2>바다의 아트숍</h2><span>전체보기 →</span></div>
+    <div class="product-row">
+      <div class="product card" onclick="openDetail('아트 포스터 세트')"><img src="assets/image2.webp"><div class="shade"></div><div class="product-info"><b>아트 포스터 세트</b><small>₩8,000 · 감성 인테리어</small></div></div>
+      <div class="product card" onclick="openDetail('필사 다이어리')"><img src="assets/image3.webp"><div class="shade"></div><div class="product-info"><b>필사 다이어리</b><small>₩12,000 · 문장 기록</small></div></div>
+      <div class="product card" onclick="openDetail('컬처 엽서팩')"><img src="assets/image4.webp"><div class="shade"></div><div class="product-info"><b>컬처 엽서팩</b><small>₩6,000 · 작가 큐레이션</small></div></div>
+    </div>
+
+    <div class="section-head"><h2>오늘의 세 가지</h2></div>
+    <div class="three-grid">
+      <div class="mini quote card" onclick="toast('오늘의 문구를 저장했어요')"><div class="mini-title">오늘의 문구</div><p>“예술은<br>우리의 일상을<br>다르게 보게 한다.”</p><small>문학 · 에세이</small></div>
+      <div class="mini community card" onclick="go('community')"><div class="mini-title">오늘의 커뮤니티</div><p>이번 주말<br>같이 전시 갈<br>사람?</p><small>댓글 18 · 메이트</small></div>
+      <div class="mini info card" onclick="go('explore')"><div class="mini-title">오늘의 정보</div><p>청소년<br>공연 할인<br>최대 50%</p><small>마감 D-5</small></div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+  <nav class="nav"></nav>
+</section>
+
+<section id="explore" class="screen">
+  <div class="topbar"><div><div class="eyebrow">DISCOVER</div><div class="wordmark">탐색</div></div><button class="iconbtn">⌕</button></div>
+  <div class="scroll">
+    <div class="segment"><button class="on" onclick="switchExplore('career',this)">진로</button><button onclick="switchExplore('info',this)">정보</button></div>
+
+    <div id="careerPanel">
+      <div class="eyebrow">CHOOSE YOUR FIELD</div>
+      <h1>어떤 예술이<br>궁금한가요?</h1>
+      <div class="pillrow">
+        <button class="pill on" onclick="selectPill(this)">미술</button><button class="pill" onclick="selectPill(this)">영화</button><button class="pill" onclick="selectPill(this)">춤</button><button class="pill" onclick="selectPill(this)">공연</button><button class="pill" onclick="selectPill(this)">음악</button><button class="pill" onclick="selectPill(this)">문학</button>
+      </div>
+      <div class="section-head"><h2>직업 정보</h2><span>더보기 →</span></div>
+      <div class="feature-card card" onclick="toast('직업 상세 정보를 열었어요')"><div class="feature-thumb"><img src="assets/image3.webp"></div><div><b>공연기획자</b><p>공연을 기획하고 제작 과정 전반을 조율하는 직업이에요.</p><span class="badge">필요 역량 · 기획력 · 소통</span></div></div>
+      <div class="feature-card card"><div class="feature-thumb"><img src="assets/image4.webp"></div><div><b>큐레이터</b><p>전시와 작품을 연결하고 관람객에게 새로운 시각을 제안해요.</p><span class="badge">전시 · 미술관</span></div></div>
+      <div class="section-head"><h2>오디션 정보</h2><span>3개</span></div>
+      <div class="mate-card card"><div class="eyebrow">D-7 · 공연</div><div class="mate-title">청소년 창작 뮤지컬 배우 모집</div><div class="meta"><span>서울</span><span>15–19세</span><span>무료 지원</span></div></div>
+      <div class="section-head"><h2>학과 정보</h2></div>
+      <div class="feature-card card"><div><b>공연예술경영과</b><p>공연기획·마케팅·홍보·제작관리 등을 배워요.</p></div><span class="arrow">→</span></div>
+      <div class="section-head"><h2>종사자 인터뷰</h2></div>
+      <div class="feature-card card"><div class="feature-thumb"><img src="assets/image2.webp"></div><div><b>“좋아하는 것을 관객에게 연결하는 일”</b><p>현직 공연기획자 B의 하루를 만나보세요.</p></div></div>
+    </div>
+
+    <div id="infoPanel" style="display:none">
+      <div class="eyebrow">ART SUPPORT</div><h1>필요한 혜택을<br>한곳에서 찾아요.</h1>
+      <div class="pillrow"><button class="pill on" onclick="selectPill(this)">공연</button><button class="pill" onclick="selectPill(this)">영화</button><button class="pill" onclick="selectPill(this)">전시</button><button class="pill" onclick="selectPill(this)">음악</button></div>
+      <div class="section-head"><h2>할인</h2><span>마감순</span></div>
+      <div class="feature-card card"><div><span class="badge">청소년 할인</span><h2 style="margin-top:7px">이번 달 연극 50% 할인</h2><p>학생증 확인 후 현장/온라인 예매 가능 · D-5</p></div></div>
+      <div class="feature-card card"><div><span class="badge">영화</span><h2 style="margin-top:7px">독립영화관 청소년 패스</h2><p>주중 관람권 6,000원 · 참여 영화관 확인</p></div></div>
+      <div class="section-head"><h2>지원금</h2><span>신청기간순</span></div>
+      <div class="feature-card card"><div><span class="badge">문화지원</span><h2 style="margin-top:7px">청소년 문화활동 지원</h2><p>문화예술 활동비를 지원하는 임시 정보 카드입니다.</p></div></div>
+      <div class="feature-card card"><div><span class="badge">지역사업</span><h2 style="margin-top:7px">지역 예술 프로그램 지원</h2><p>지역별 신청조건과 일정을 확인해보세요.</p></div></div>
+    </div>
+  </div><nav class="nav"></nav>
+</section>
+
+<section id="community" class="screen">
+  <div class="topbar"><div><div class="eyebrow">TOGETHER</div><div class="wordmark">커뮤니티</div></div><button class="iconbtn" onclick="toast('글쓰기 화면을 준비 중이에요')">＋</button></div>
+  <div class="scroll">
+    <div class="segment"><button class="on" onclick="switchCommunity('trade',this)">거래</button><button onclick="switchCommunity('mate',this)">메이트</button></div>
+    <div id="tradePanel">
+      <div class="pillrow"><button class="pill on" onclick="selectPill(this)">전체</button><button class="pill" onclick="selectPill(this)">미술</button><button class="pill" onclick="selectPill(this)">영화</button><button class="pill" onclick="selectPill(this)">공연</button><button class="pill" onclick="selectPill(this)">음악</button></div>
+      <div class="section-head"><h2>예술 입시 거래</h2><span>최신순 ▾</span></div>
+      <div class="trade-card card"><div class="trade-thumb"><img src="assets/image2.webp"></div><div class="trade-main"><b>미대 입시 실기책 묶음</b><p>사용감 적어요 · 성사동</p><span class="price">25,000원</span></div><button class="chatbtn" onclick="toast('판매자에게 채팅을 보냈어요')">채팅</button></div>
+      <div class="trade-card card"><div class="trade-thumb"><img src="assets/image3.webp"></div><div class="trade-main"><b>공연예술 입시 전공서적</b><p>필기 조금 있음 · 화정동</p><span class="price">10,000원</span></div><button class="chatbtn" onclick="toast('판매자에게 채팅을 보냈어요')">채팅</button></div>
+      <div class="trade-card card"><div class="trade-thumb"><img src="assets/image4.webp"></div><div class="trade-main"><b>카메라 삼각대 / 촬영 준비물</b><p>직거래 가능 · 일산</p><span class="price">18,000원</span></div><button class="chatbtn" onclick="toast('판매자에게 채팅을 보냈어요')">채팅</button></div>
+    </div>
+    <div id="matePanel" style="display:none">
+      <div class="section-head"><h2>같이 예술하러 가요</h2><span>모집중</span></div>
+      <div class="mate-card card"><div class="eyebrow">모집중 · 2/4명</div><div class="mate-title">이번 주 토요일 미술관 같이 갈 사람!</div><div class="meta"><span>📍 서울시립미술관</span><span>🕒 9/26 14:00</span><span>👥 2명 더</span></div></div>
+      <div class="mate-card card"><div class="eyebrow">모집중 · 3/5명</div><div class="mate-title">독립영화 보고 카페 갈 사람</div><div class="meta"><span>📍 홍대</span><span>🕒 오늘 18:30</span><span>👥 2명 더</span></div></div>
+      <div class="mate-card card"><div class="eyebrow">모집중 · 1/3명</div><div class="mate-title">공연기획 진로 이야기 같이 해요</div><div class="meta"><span>📍 온라인</span><span>🕒 9/28 20:00</span><span>👥 2명 더</span></div></div>
+    </div>
+  </div><nav class="nav"></nav>
+</section>
+
+<section id="map" class="screen">
+  <div class="topbar" style="position:absolute;top:0;left:0;right:0;z-index:5"><div class="wordmark">지도</div><button class="iconbtn" onclick="toast('현재 위치를 찾았어요')">⌖</button></div>
+  <div class="mapwrap">
+    <div class="mapbg"></div>
+    <div class="searchbox"><span>⌕</span><input placeholder="공연, 전시, 영화관을 검색해보세요" /></div>
+    <div class="mapchips"><button class="mapchip on" onclick="mapChip(this)">전체</button><button class="mapchip" onclick="mapChip(this)">공연</button><button class="mapchip" onclick="mapChip(this)">영화</button><button class="mapchip" onclick="mapChip(this)">전시</button><button class="mapchip" onclick="mapChip(this)">음악</button></div>
+    <div class="pin p1"><span>♪</span></div><div class="pin p2"><span>★</span></div><div class="pin p3"><span>▶</span></div><div class="pin p4"><span>✦</span></div>
+    <div class="mapbottom" onclick="openDetail('근처 오늘의 추천')"><b>지금 근처에서 만날 수 있는 문화예술</b><p>공연 4개 · 영화 7개 · 전시 3개 · 현재 위치 기준</p></div>
+  </div><nav class="nav"></nav>
+</section>
+
+<section id="my" class="screen">
+  <div class="topbar"><div><div class="eyebrow">MY BADA</div><div class="wordmark">마이</div></div><button class="iconbtn">⚙</button></div>
+  <div class="scroll">
+    <div class="profile"><div class="avatar">H</div><div><small>안녕하세요</small><b>희진님</b><small>관심 분야 · 공연 · 음악 · 영화</small></div><span style="margin-left:auto">→</span></div>
+    <div class="menu">
+      <button onclick="toast('정보 수정 화면')"><span>정보 수정</span><span class="arrow">›</span></button>
+      <button onclick="toast('내 메이트를 불러오는 중')"><span>내 메이트</span><span class="arrow">›</span></button>
+      <button onclick="toast('내 거래 내역')"><span>내 거래</span><span class="arrow">›</span></button>
+      <button onclick="toast('내 진로 정보')"><span>내 진로</span><span class="arrow">›</span></button>
+      <button onclick="toast('알림 설정')"><span>알림</span><span class="arrow">›</span></button>
+    </div>
+    <div class="premium" onclick="toast('프리미엄 구매 화면')"><b>BADA PLUS ✦</b><p>관심 분야 맞춤 큐레이션, 키트 할인, 숨겨진 문화예술 정보 등 더 많은 기능을 준비하고 있어요.</p><button class="primary" style="width:100%">프리미엄 알아보기 →</button></div>
+  </div><nav class="nav"></nav>
+</section>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="detail-img"><img id="detailImg" src=""></div>
+    <div class="detail"><div class="eyebrow">BADA PICK</div><h2 id="detailTitle">상세 정보</h2><p id="detailText">문화예술 정보를 더 쉽게 이해할 수 있도록 정리한 임시 상세 화면입니다. 실제 정보는 추후 입력하면 됩니다.</p>
+    <div class="actionrow"><button class="primary" onclick="toast('저장했어요');closeModal()">♡ 관심 저장</button><button class="secondary" onclick="toast('공유 링크를 준비했어요')">↗ 공유</button></div></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+</div>
+
+<script>
+const screens=['home','explore','map','community','my'];
+const imgs={art1:'assets/image2.webp',art2:'assets/image3.webp',art3:'assets/image4.webp',banner:'assets/image1.webp'};
+function renderNav(){
+ document.querySelectorAll('.nav').forEach(nav=>{
+  nav.innerHTML=screens.map((s,i)=>{
+   const labels=['홈','탐색','지도','커뮤니티','마이'];
+   const icons=['⌂','✦','⌖','♡','○'];
+   return `<button data-screen="${s}" onclick="go('${s}')"><span>${icons[i]}</span>${labels[i]}</button>`;
+  }).join('');
+ });
+}
+function go(id){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.screen===id));
+ document.querySelectorAll('.scroll').forEach(x=>x.scrollTop=0);
+}
+function selectPill(btn){
+ const row=btn.parentElement;
+ row.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
+ btn.classList.add('on');
+}
+function switchExplore(which,btn){
+ btn.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); btn.classList.add('on');
+ document.getElementById('careerPanel').style.display=which==='career'?'block':'none';
+ document.getElementById('infoPanel').style.display=which==='info'?'block':'none';
+}
+function switchCommunity(which,btn){
+ btn.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); btn.classList.add('on');
+ document.getElementById('tradePanel').style.display=which==='trade'?'block':'none';
+ document.getElementById('matePanel').style.display=which==='mate'?'block':'none';
+}
+function mapChip(btn){
+ btn.parentElement.querySelectorAll('.mapchip').forEach(x=>x.classList.remove('on'));btn.classList.add('on');
+ toast(btn.textContent+' 장소를 지도에 표시했어요');
+}
+function openDetail(title){
+ document.getElementById('detailTitle').textContent=title;
+ document.getElementById('detailImg').src=imgs.art2;
+ document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+let toastTimer;
+function toast(msg){
+ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1700);
+}
+renderNav();
+setTimeout(()=>go('home'),1500);
+</script>
+</body>
+</html>
